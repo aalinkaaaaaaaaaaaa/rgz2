@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Добавить книгу - BookHub{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">➕ Добавить новую книгу</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('add_book') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Название книги *</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="author" class="form-label">Автор *</label>
+                        <input type="text" class="form-control" id="author" name="author" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="pages" class="form-label">Количество страниц *</label>
+                        <input type="number" class="form-control" id="pages" name="pages" min="1" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="publisher" class="form-label">Издательство *</label>
+                        <input type="text" class="form-control" id="publisher" name="publisher" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Описание</label>
+                        <textarea class="form-control" id="description" name="description" rows="4"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="cover_image" class="form-label">Обложка книги</label>
+                        <input type="file" class="form-control" id="cover_image" name="cover_image" accept=".jpg,.jpeg,.png,.gif">
+                        <div class="form-text">Разрешены форматы: JPG, JPEG, PNG, GIF. Если не загрузить, будет использована обложка по умолчанию.</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">✅ Добавить книгу</button>
+                        <a href="{{ url_for('admin_books') }}" class="btn btn-outline-secondary">❌ Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
