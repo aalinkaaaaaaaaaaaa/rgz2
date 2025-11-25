@@ -250,11 +250,23 @@ def add_book():
         if file and file.filename != '':
             if allowed_file(file.filename):
                 filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                book.cover_image = filename
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                
+                # ДЕБАГ: выводим информацию о файле
+                print(f"Загружаемый файл: {filename}")
+                print(f"Полный путь: {file_path}")
+                
+                file.save(file_path)
+                
+                # Проверяем что файл сохранился
+                if os.path.exists(file_path):
+                    print(f"✅ Файл успешно сохранен: {file_path}")
+                    book.cover_image = filename
+                else:
+                    print(f"❌ Файл НЕ сохранен: {file_path}")
             else:
                 flash('Недопустимый формат файла. Разрешены: png, jpg, jpeg, gif', 'warning')
-    
+                
     db.session.add(book)
     db.session.commit()
     
