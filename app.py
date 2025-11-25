@@ -75,16 +75,17 @@ def index():
     sort_by = request.args.get('sort_by', 'title')
     sort_order = request.args.get('sort_order', 'asc')
     
-    #Базовый запрос
+    #Получаем книги из базы
     all_books = Book.query.all()
-
+    
+    #Фильтруем книги в Python (регистронезависимо)
     filtered_books = []
     
-    #Применяем фильтры 
     for book in all_books:
+        #Приводим все к нижнему регистру для сравнения
         book_title_lower = book.title.lower()
-        book_author_lower = book.author.lower() if book.author else ""
-        book_publisher_lower = book.publisher.lower() if book.publisher else ""
+        book_author_lower = book.author.lower()
+        book_publisher_lower = book.publisher.lower()
         
         #Проверяем совпадение по названию
         title_match = not title_filter or title_filter in book_title_lower
@@ -106,7 +107,7 @@ def index():
         if title_match and author_match and publisher_match and pages_match:
             filtered_books.append(book)
     
-    #Применяем сортировку
+    #Сортировка
     if sort_by in ['title', 'author', 'publisher', 'pages']:
         reverse_order = (sort_order == 'desc')
         filtered_books.sort(key=lambda x: getattr(x, sort_by), reverse=reverse_order)
@@ -120,7 +121,7 @@ def index():
     end_idx = start_idx + per_page
     books_for_page = filtered_books[start_idx:end_idx]
     
-    #Создаем объект, похожий на Pagination для совместимости с шаблоном
+    #Создаем объект пагинации для совместимости с шаблоном
     class SimplePagination:
         def __init__(self, items, page, per_page, total):
             self.items = items
@@ -130,13 +131,52 @@ def index():
             self.pages = total_pages
             self.has_prev = page > 1
             self.has_next = page < total_pages
-            self.prev_num = page - 1
-            self.next_num = page + 1
+            self.prev_num = page - 1 if page > 1 else None
+            self.next_num = page + 1 if page < total_pages else None
+            
+        def iter_pages(self, left_edge=2, left_current=2, right_current=3, right_edge=2):
+            """Генерирует номера страниц для пагинации (аналог Flask-SQLAlchemy)"""
+            if self.pages <= 1:
+                return
+            
+            # Всегда показываем первую страницу
+            yield 1
+            
+            # Левая граница
+            for i in range(2, left_edge + 1):
+                if i <= self.pages:
+                    yield i
+            
+            # Разделитель если нужно
+            if left_edge + 1 < self.page - left_current:
+                yield None
+            
+            # Текущие страницы слева
+            for i in range(max(left_edge + 1, self.page - left_current), self.page):
+                if i <= self.pages:
+                    yield i
+            
+            # Текущая страница
+            if 1 <= self.page <= self.pages:
+                yield self.page
+            
+            # Текущие страницы справа
+            for i in range(self.page + 1, min(self.page + right_current + 1, self.pages)):
+                yield i
+            
+            # Разделитель если нужно
+            if self.page + right_current < self.pages - right_edge:
+                yield None
+            
+            # Правая граница
+            for i in range(max(self.page + right_current + 1, self.pages - right_edge + 1), self.pages + 1):
+                if i <= self.pages:
+                    yield i
     
     books = SimplePagination(books_for_page, page, per_page, total_books)
     
     return render_template('index.html', books=books, filters=request.args)
-
+        
 #Регистрация
 @app.route('/register', methods=['GET', 'POST'])
 def register():
