@@ -80,17 +80,11 @@ def index():
     
     #Применяем фильтры 
     if title_filter:
-        books_query = books_query.filter(
-            db.func.lower(Book.title).like(f'%{title_filter.lower()}%')
-        )
+        books_query = books_query.filter(Book.title.ilike(f'%{title_filter}%'))
     if author_filter:
-        books_query = books_query.filter(
-            db.func.lower(Book.author).like(f'%{author_filter.lower()}%')
-        )
+        books_query = books_query.filter(Book.author.ilike(f'%{author_filter}%'))
     if publisher_filter:
-        books_query = books_query.filter(
-            db.func.lower(Book.publisher).like(f'%{publisher_filter.lower()}%')
-        )
+        books_query = books_query.filter(Book.publisher.ilike(f'%{publisher_filter}%'))
     if min_pages:
         books_query = books_query.filter(Book.pages >= min_pages)
     if max_pages:
