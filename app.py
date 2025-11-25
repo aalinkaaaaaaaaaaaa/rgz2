@@ -67,37 +67,75 @@ def index():
     per_page = 20
     
     #Получаем параметры фильтрации
-    title_filter = request.args.get('title', '').strip()
-    author_filter = request.args.get('author', '').strip()
-    publisher_filter = request.args.get('publisher', '').strip()
+    title_filter = request.args.get('title', '').strip().lower()
+    author_filter = request.args.get('author', '').strip().lower()
+    publisher_filter = request.args.get('publisher', '').strip().lower()
     min_pages = request.args.get('min_pages', type=int)
     max_pages = request.args.get('max_pages', type=int)
     sort_by = request.args.get('sort_by', 'title')
     sort_order = request.args.get('sort_order', 'asc')
     
     #Базовый запрос
-    books_query = Book.query
+    all_books = Book.query.all()
+
+    filtered_books = []
     
     #Применяем фильтры 
-    if title_filter:
-        books_query = books_query.filter(Book.title.ilike(f'%{title_filter}%'))
-    if author_filter:
-        books_query = books_query.filter(Book.author.ilike(f'%{author_filter}%'))
-    if publisher_filter:
-        books_query = books_query.filter(Book.publisher.ilike(f'%{publisher_filter}%'))
-    if min_pages:
-        books_query = books_query.filter(Book.pages >= min_pages)
-    if max_pages:
-        books_query = books_query.filter(Book.pages <= max_pages)
+    for book in all_books:
+        #Проверяем совпадение по названию (регистронезависимо)
+        title_match = True
+        if title_filter:
+            title_match = title_filter in book.title.lower()
+        
+        #Проверяем совпадение по автору (регистронезависимо)
+        author_match = True
+        if author_filter:
+            author_match = author_filter in book.author.lower()
+        
+        #Проверяем совпадение по издательству (регистронезависимо)
+        publisher_match = True
+        if publisher_filter:
+            publisher_match = publisher_filter in book.publisher.lower()
+        
+        #Проверяем количество страниц
+        pages_match = True
+        if min_pages and book.pages < min_pages:
+            pages_match = False
+        if max_pages and book.pages > max_pages:
+            pages_match = False
+        
+        #Если все условия выполнены - добавляем книгу
+        if title_match and author_match and publisher_match and pages_match:
+            filtered_books.append(book)
     
     #Применяем сортировку
-    if sort_order == 'desc':
-        books_query = books_query.order_by(getattr(Book, sort_by).desc())
-    else:
-        books_query = books_query.order_by(getattr(Book, sort_by).asc())
+    if sort_by in ['title', 'author', 'publisher', 'pages']:
+        reverse_order = (sort_order == 'desc')
+        filtered_books.sort(key=lambda x: getattr(x, sort_by), reverse=reverse_order)
     
     #Пагинация
-    books = books_query.paginate(page=page, per_page=per_page, error_out=False)
+    total_books = len(filtered_books)
+    total_pages = (total_books + per_page - 1) // per_page
+    
+    #Рассчитываем индексы для текущей страницы
+    start_idx = (page - 1) * per_page
+    end_idx = start_idx + per_page
+    books_for_page = filtered_books[start_idx:end_idx]
+    
+    #Создаем объект, похожий на Pagination для совместимости с шаблоном
+    class SimplePagination:
+        def __init__(self, items, page, per_page, total):
+            self.items = items
+            self.page = page
+            self.per_page = per_page
+            self.total = total
+            self.pages = total_pages
+            self.has_prev = page > 1
+            self.has_next = page < total_pages
+            self.prev_num = page - 1
+            self.next_num = page + 1
+    
+    books = SimplePagination(books_for_page, page, per_page, total_books)
     
     return render_template('index.html', books=books, filters=request.args)
 
