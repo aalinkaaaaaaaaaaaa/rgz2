@@ -67,9 +67,9 @@ def index():
     per_page = 20
     
     #Получаем параметры фильтрации
-    title_filter = request.args.get('title', '')
-    author_filter = request.args.get('author', '')
-    publisher_filter = request.args.get('publisher', '')
+    title_filter = request.args.get('title', '').strip()
+    author_filter = request.args.get('author', '').strip()
+    publisher_filter = request.args.get('publisher', '').strip()
     min_pages = request.args.get('min_pages', type=int)
     max_pages = request.args.get('max_pages', type=int)
     sort_by = request.args.get('sort_by', 'title')
@@ -252,13 +252,13 @@ def add_book():
                 filename = secure_filename(file.filename)
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 
-                # ДЕБАГ: выводим информацию о файле
+                #ДЕБАГ: выводим информацию о файле
                 print(f"Загружаемый файл: {filename}")
                 print(f"Полный путь: {file_path}")
                 
                 file.save(file_path)
                 
-                # Проверяем что файл сохранился
+                #Проверяем что файл сохранился
                 if os.path.exists(file_path):
                     print(f"✅ Файл успешно сохранен: {file_path}")
                     book.cover_image = filename
@@ -266,7 +266,7 @@ def add_book():
                     print(f"❌ Файл НЕ сохранен: {file_path}")
             else:
                 flash('Недопустимый формат файла. Разрешены: png, jpg, jpeg, gif', 'warning')
-                
+
     db.session.add(book)
     db.session.commit()
     
