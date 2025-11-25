@@ -67,9 +67,9 @@ def index():
     per_page = 20
     
     #Получаем параметры фильтрации
-    title_filter = request.args.get('title', '').strip().lower()
-    author_filter = request.args.get('author', '').strip().lower()
-    publisher_filter = request.args.get('publisher', '').strip().lower()
+    title_filter = request.args.get('title', '').strip()
+    author_filter = request.args.get('author', '').strip()
+    publisher_filter = request.args.get('publisher', '').strip()
     min_pages = request.args.get('min_pages', type=int)
     max_pages = request.args.get('max_pages', type=int)
     sort_by = request.args.get('sort_by', 'title')
@@ -80,11 +80,17 @@ def index():
     
     #Применяем фильтры
     if title_filter:
-        books_query = books_query.filter(Book.title.ilike(f'%{title_filter}%'))
+        books_query = books_query.filter(
+            db.func.lower(Book.title).contains(title_filter.lower())
+        )
     if author_filter:
-        books_query = books_query.filter(Book.author.ilike(f'%{author_filter}%'))
+        books_query = books_query.filter(
+            db.func.lower(Book.author).contains(author_filter.lower())
+        )
     if publisher_filter:
-        books_query = books_query.filter(Book.publisher.ilike(f'%{publisher_filter}%'))
+        books_query = books_query.filter(
+            db.func.lower(Book.publisher).contains(publisher_filter.lower())
+        )
     if min_pages:
         books_query = books_query.filter(Book.pages >= min_pages)
     if max_pages:
