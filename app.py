@@ -67,9 +67,9 @@ def index():
     per_page = 20
     
     #Получаем параметры фильтрации
-    title_filter = request.args.get('title', '').strip()
-    author_filter = request.args.get('author', '').strip()
-    publisher_filter = request.args.get('publisher', '').strip()
+    title_filter = request.args.get('title', '').strip().lower()
+    author_filter = request.args.get('author', '').strip().lower()
+    publisher_filter = request.args.get('publisher', '').strip().lower()
     min_pages = request.args.get('min_pages', type=int)
     max_pages = request.args.get('max_pages', type=int)
     sort_by = request.args.get('sort_by', 'title')
