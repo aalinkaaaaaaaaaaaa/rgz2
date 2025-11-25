@@ -82,20 +82,18 @@ def index():
     
     #Применяем фильтры 
     for book in all_books:
-        #Проверяем совпадение по названию (регистронезависимо)
-        title_match = True
-        if title_filter:
-            title_match = title_filter in book.title.lower()
+        book_title_lower = book.title.lower()
+        book_author_lower = book.author.lower() if book.author else ""
+        book_publisher_lower = book.publisher.lower() if book.publisher else ""
         
-        #Проверяем совпадение по автору (регистронезависимо)
-        author_match = True
-        if author_filter:
-            author_match = author_filter in book.author.lower()
+        #Проверяем совпадение по названию
+        title_match = not title_filter or title_filter in book_title_lower
         
-        #Проверяем совпадение по издательству (регистронезависимо)
-        publisher_match = True
-        if publisher_filter:
-            publisher_match = publisher_filter in book.publisher.lower()
+        #Проверяем совпадение по автору
+        author_match = not author_filter or author_filter in book_author_lower
+        
+        #Проверяем совпадение по издательству
+        publisher_match = not publisher_filter or publisher_filter in book_publisher_lower
         
         #Проверяем количество страниц
         pages_match = True
@@ -115,7 +113,7 @@ def index():
     
     #Пагинация
     total_books = len(filtered_books)
-    total_pages = (total_books + per_page - 1) // per_page
+    total_pages = (total_books + per_page - 1) // per_page if total_books > 0 else 1
     
     #Рассчитываем индексы для текущей страницы
     start_idx = (page - 1) * per_page
