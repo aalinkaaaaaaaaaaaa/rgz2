@@ -315,3 +315,21 @@
     </div>
 </div>
 {% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInputs = ['title', 'author', 'publisher'];
+    
+    searchInputs.forEach(function(fieldName) {
+        const input = document.getElementById(fieldName);
+        if (input) {
+            input.addEventListener('blur', function() {
+                this.value = this.value.trim();
+            });
+        }
+    });
+});
+</script>
+{% endblock %}
